@@ -1,0 +1,6 @@
+@DataBrokerAPI_HostAddress = http://localhost:5153
+
+GET {{DataBrokerAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
