@@ -26,5 +26,14 @@ namespace DataBrokerAPI.Controllers
             return Ok(customer);
 
         }
+
+        [HttpPost("login")]
+        public ActionResult<string> Login(CustomerDTO request)
+        {
+            //Check that the usernames match or return bad request
+
+            //Verify the hashed password
+            return "Login successful";  
+        }
     }
 }
