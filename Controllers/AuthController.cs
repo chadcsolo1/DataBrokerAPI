@@ -1,6 +1,7 @@
 ﻿using DataBrokerAPI.Entities;
 using DataBrokerAPI.Entities.DTOs;
 using DataBrokerAPI.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -61,6 +62,13 @@ namespace DataBrokerAPI.Controllers
             var token = CreateToken(customer);
 
             return Ok(token);  
+        }
+
+        [Authorize] // This attribute ensures that the endpoint can only be accessed by authenticated users
+        [HttpGet("auth")]
+        public IActionResult AuthenticatedOnly()
+        {
+            return Ok("You are authenticated!");
         }
 
         private string CreateToken(Customer customer)
