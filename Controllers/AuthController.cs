@@ -71,13 +71,21 @@ namespace DataBrokerAPI.Controllers
             return Ok("You are authenticated!");
         }
 
+        [Authorize(Roles = "gold")]
+        [HttpGet("goldmember")]
+        public IActionResult AuthorizedOnly()
+        {
+            return Ok("You are a gold member!");
+        }
+
         private string CreateToken(Customer customer)
         {
             //Create claims for the customer
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, customer.CustomerId.ToString()),
-                new Claim(ClaimTypes.Name, customer.Username)
+                new Claim(ClaimTypes.Name, customer.Username),
+                new Claim(ClaimTypes.Role, customer.MemberShip) // Example role, can be dynamic based on customer data
             };
 
             //Symmetric Security Key - Signing key to ensure that the JWT actually came from this api

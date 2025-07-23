@@ -29,5 +29,11 @@
             get;
             set;
         } = string.Empty;
+
+        public string MemberShip
+        {
+            get;
+            set;
+        } = string.Empty;
     }
 }
