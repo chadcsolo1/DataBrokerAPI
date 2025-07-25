@@ -1,26 +1,52 @@
 ﻿using DataBrokerAPI.Data;
 using DataBrokerAPI.Entities;
+using DataBrokerAPI.Entities.DTOs;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 using System.Reflection.Metadata.Ecma335;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace DataBrokerAPI.Repositories.Implementations
 {
     public class CustomerRepo : ICustomerRepo
     {
         private readonly ApplicationDbContext _db;
-        public CustomerRepo(ApplicationDbContext db)
+        private readonly IConfiguration _configuration;
+        private readonly IUnitOfWork _unitOfWork;
+        public CustomerRepo(ApplicationDbContext db, IConfiguration configuration, IUnitOfWork unitOfWork)
         {
             _db = db ?? throw new ArgumentNullException(nameof(db));
+            _configuration = configuration;
+            _unitOfWork = unitOfWork;
         }
-        public Customer GetCustomerByUsername(string username)
+        public async Task<TokenResponseDTO> GetCustomerByUsername(CustomerDTO request)
         {
-            if (string.IsNullOrEmpty(username))
+            if (string.IsNullOrEmpty(request.Username))
             {
-                throw new ArgumentException("Username cannot be null or empty", nameof(username));
+                return null;
+                //throw new ArgumentException("Username cannot be null or empty", nameof(request.Username));
             }
 
-            var customer = _db.Customers.FirstOrDefault(c => c.Username == username);
+            var customer = _db.Customers.FirstOrDefault(c => c.Username == request.Username);
 
-            return customer ?? throw new KeyNotFoundException($"Customer with username '{username}' not found.");
+            if (new PasswordHasher<Customer>().VerifyHashedPassword(customer, customer.PasswordHash, request.Password) == PasswordVerificationResult.Failed)
+            {
+                return null;
+            }
+
+            var response = new TokenResponseDTO
+            {
+                AccessToken = CreateToken(customer),
+                RefreshToken = await GenerateAndSaveRefreshToken(customer),
+            };
+
+            return response;
         }
+
+
     }
 }

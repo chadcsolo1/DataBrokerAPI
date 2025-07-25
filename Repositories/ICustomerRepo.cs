@@ -1,9 +1,10 @@
 ﻿using DataBrokerAPI.Entities;
+using DataBrokerAPI.Entities.DTOs;
 
 namespace DataBrokerAPI.Repositories
 {
     public interface ICustomerRepo
     {
-        Customer GetCustomerByUsername(string username);
+        TokenResponseDTO GetCustomerByUsername(CustomerDTO request);
     }
 }
