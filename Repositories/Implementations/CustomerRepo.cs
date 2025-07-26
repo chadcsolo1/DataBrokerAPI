@@ -15,15 +15,11 @@ namespace DataBrokerAPI.Repositories.Implementations
     public class CustomerRepo : ICustomerRepo
     {
         private readonly ApplicationDbContext _db;
-        private readonly IConfiguration _configuration;
-        private readonly IUnitOfWork _unitOfWork;
-        public CustomerRepo(ApplicationDbContext db, IConfiguration configuration, IUnitOfWork unitOfWork)
+        public CustomerRepo(ApplicationDbContext db)
         {
             _db = db ?? throw new ArgumentNullException(nameof(db));
-            _configuration = configuration;
-            _unitOfWork = unitOfWork;
         }
-        public async Task<TokenResponseDTO> GetCustomerByUsername(CustomerDTO request)
+        public async Task<Customer> GetCustomerByUsername(CustomerDTO request)
         {
             if (string.IsNullOrEmpty(request.Username))
             {
@@ -38,13 +34,8 @@ namespace DataBrokerAPI.Repositories.Implementations
                 return null;
             }
 
-            var response = new TokenResponseDTO
-            {
-                AccessToken = CreateToken(customer),
-                RefreshToken = await GenerateAndSaveRefreshToken(customer),
-            };
 
-            return response;
+            return customer;
         }
 
 
