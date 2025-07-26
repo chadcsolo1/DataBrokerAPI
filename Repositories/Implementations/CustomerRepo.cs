@@ -15,11 +15,9 @@ namespace DataBrokerAPI.Repositories.Implementations
     public class CustomerRepo : ICustomerRepo
     {
         private readonly ApplicationDbContext _db;
-        private readonly IUnitOfWork _unitOfWork;
-        public CustomerRepo(ApplicationDbContext db, IUnitOfWork unitOfWork)
+        public CustomerRepo(ApplicationDbContext db)
         {
             _db = db ?? throw new ArgumentNullException(nameof(db));
-            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
         }
         public async Task<Customer> GetCustomerByUsername(CustomerDTO request)
         {
@@ -51,9 +49,8 @@ namespace DataBrokerAPI.Repositories.Implementations
                 throw new InvalidOperationException("Customer with this username already exists.");
             }
 
-            // Save the new customer to the database
-            _db.Customers.Add(customer);
-            _unitOfWork.Save();  
+            // Save this transaction within the service layer via UnitOfWork
+            _db.Customers.Add(customer); 
             return "CreateCustomer method not implemented yet.";
         }
 

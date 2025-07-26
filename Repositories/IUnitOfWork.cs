@@ -7,6 +7,10 @@
             get;
         }
         void Save();
+        Task SaveAsync();
         void Rollback();
+        Task RollbackAsync();
+        void BeginTransaction();
+        void Dispose();
     }
 }

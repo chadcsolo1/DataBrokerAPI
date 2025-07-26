@@ -17,6 +17,8 @@ namespace DataBrokerAPI.Services.AuthService
             _configuration = configuration;
         }
 
+        //We need to add the login and registar mthods here in the Service Layer
+
         public Task<TokenResponseDTO> GenerateRefreshToken(CustomerDTO request)
         {
             throw new NotImplementedException();
