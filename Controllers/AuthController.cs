@@ -1,6 +1,7 @@
 ﻿using DataBrokerAPI.Entities;
 using DataBrokerAPI.Entities.DTOs;
 using DataBrokerAPI.Repositories;
+using DataBrokerAPI.Services.AuthService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -18,51 +19,68 @@ namespace DataBrokerAPI.Controllers
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IConfiguration _configuration;
-        public AuthController(IUnitOfWork unitOfWork, IConfiguration configuration)
+        private readonly IAuthService _authService;
+        public AuthController(IUnitOfWork unitOfWork, IConfiguration configuration, IAuthService authService)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _authService = authService ?? throw new ArgumentNullException(nameof(authService));
         }
         [HttpPost("registar")]
-        public ActionResult<CustomerDTO> Register(CustomerDTO request)
+        public ActionResult<string> Register(RegistarCustomerReqeust request)
         {
-            //Create a new customer object
-            Customer customer = new Customer();
+            //Validate the request
+            if (request == null)
+            {
+                return BadRequest("Request cannot be null.");
+            }
 
-            //hash the password
-            var hashedPassword = new PasswordHasher<Customer>()
-                .HashPassword(customer, request.Password);
+            if (string.IsNullOrEmpty(request.FirstName) ||
+                string.IsNullOrEmpty(request.LastName) ||
+                string.IsNullOrEmpty(request.Username) ||
+                string.IsNullOrEmpty(request.Password))
+            {
+                return BadRequest("All fields are required.");
+            }
 
-            //map the request or customerDTO to an actual customer object
-            customer.Username = request.Username;
-            customer.PasswordHash = hashedPassword;
+            if (request.FirstName.GetType() != typeof(string) ||
+                request.LastName.GetType() != typeof(string) ||
+                request.Username.GetType() != typeof(string) ||
+                request.Password.GetType() != typeof(string))
+            {
+                return BadRequest("All fields must be of type string.");
+            }
 
-            return Ok(customer);
+            var response = _authService.Registar(request);
+
+            return Ok(response);
 
         }
 
         [HttpPost("login")]
-        public ActionResult<string> Login(CustomerDTO request)
+        public ActionResult<TokenResponseDTO> Login(CustomerDTO request)
         {
-            //Pull customer from the database by username
-            var customer = _unitOfWork.CustomerRepo.GetCustomerByUsername(request.Username);
-
-            //Check that the usernames match or return bad request
-            if (customer == null || customer.Username != request.Username)
+            //Validate the request
+            if (request == null)
             {
-                return BadRequest("Username or password is incorrect");
+                return null;
             }
 
-            //Verify the hashed password
-            if (new PasswordHasher<Customer>().VerifyHashedPassword(customer, customer.PasswordHash, request.Password) == PasswordVerificationResult.Failed)
+            //Validate expected format of request
+            if (string.IsNullOrEmpty(request.Username) || string.IsNullOrEmpty(request.Password))
             {
-                return BadRequest("Username or password is incorrect");
+                return null;
+            }
+
+            if (request.Username.GetType() != typeof(string) && request.Password.GetType() != typeof(string))
+            {
+                throw new ArgumentException("Username and Password must be of type string.");
             }
 
             //Create a token for the customer
-            var token = CreateToken(customer);
+            var tokens = _authService.Login(request);
 
-            return Ok(token);  
+            return Ok(tokens);  
         }
 
         [Authorize] // This attribute ensures that the endpoint can only be accessed by authenticated users

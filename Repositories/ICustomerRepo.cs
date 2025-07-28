@@ -6,5 +6,6 @@ namespace DataBrokerAPI.Repositories
     public interface ICustomerRepo
     {
         Task<Customer> GetCustomerByUsername(CustomerDTO request);
+        Task<string> CreateCustomer(Customer customer);
     }
 }

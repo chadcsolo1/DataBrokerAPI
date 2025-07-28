@@ -86,22 +86,7 @@ namespace DataBrokerAPI.Services.AuthService
 
         public async Task<TokenResponseDTO?> Login(CustomerDTO request)
         {
-            //Validate the request
-            if (request == null)
-            {
-                return null;
-            }
 
-            //Validate expected format of request
-            if (string.IsNullOrEmpty(request.Username) || string.IsNullOrEmpty(request.Password))
-            {
-                return null;
-            }
-
-            if (request.Username.GetType() != typeof(string) && request.Password.GetType() != typeof(string))
-            {
-                throw new ArgumentException("Username and Password must be of type string.");
-            }
 
             //Get the customer by username and if null , return null
             var customer = await _customerRepo.GetCustomerByUsername(request);
@@ -128,6 +113,38 @@ namespace DataBrokerAPI.Services.AuthService
             //return the token and refresh token
             return response;
 
+        }
+
+        public async Task<string> Registar(RegistarCustomerReqeust request)
+        {
+            Customer newCustomer = new Customer();
+
+            //Check if customer already exists
+            var customer = await _customerRepo.GetCustomerByUsername(new CustomerDTO { Username = request.Username });
+            
+            if (customer != null)
+            {
+                throw new InvalidOperationException("Customer with this username already exists.");
+            }
+
+            //Hash the password
+            var hashedPassword = new PasswordHasher<Customer>()
+                .HashPassword(newCustomer, request.Password);
+
+            //Map request to Customer object
+            newCustomer.FirstName = request.FirstName;
+            newCustomer.LastName = request.LastName;
+            newCustomer.Username = request.Username;
+            newCustomer.PasswordHash = hashedPassword;
+
+            //Add the customer to the database
+            await _customerRepo.CreateCustomer(newCustomer);
+
+            //Save changes to the database
+            await _unitOfWork.SaveAsync();
+
+            //Return the customer object
+            return $"Thank you for registaring {newCustomer.Username}";
         }
     }
 }
