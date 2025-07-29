@@ -58,7 +58,7 @@ namespace DataBrokerAPI.Controllers
         }
 
         [HttpPost("login")]
-        public ActionResult<TokenResponseDTO> Login(CustomerDTO request)
+        public async Task<ActionResult<TokenResponseDTO>> Login(CustomerDTO request)
         {
             //Validate the request
             if (request == null)
@@ -78,7 +78,7 @@ namespace DataBrokerAPI.Controllers
             }
 
             //Create a token for the customer
-            var tokens = _authService.Login(request);
+            var tokens = await _authService.Login(request);
 
             return Ok(tokens);  
         }

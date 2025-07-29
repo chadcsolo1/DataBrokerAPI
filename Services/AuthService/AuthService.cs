@@ -54,16 +54,16 @@ namespace DataBrokerAPI.Services.AuthService
             return refreshToken;
         }
 
-        public async Task<string> GenerateToken(CustomerDTO request)
+        public async Task<string> GenerateToken(Customer request)
         {
             //Retrieve Customer by Username
-            Customer customer = await _customerRepo.GetCustomerByUsername(request);
+            //Customer customer = await _customerRepo.GetCustomerByUsername(request);
 
             //Create Claim
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, request.Username),
-                new Claim(ClaimTypes.Role, customer.MemberShip)
+                new Claim(ClaimTypes.Role, request.MemberShip)
             };
 
             //Create Key
@@ -102,11 +102,10 @@ namespace DataBrokerAPI.Services.AuthService
                 return null; // or throw an exception
             }
 
-
             //Create and populate TokenResponseDTO object
             var response = new TokenResponseDTO
             {
-                AccessToken = await GenerateToken(request),
+                AccessToken = await GenerateToken(customer),
                 RefreshToken = await GenerateAndSaveRefreshToken(customer),
             };
 
