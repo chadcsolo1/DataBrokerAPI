@@ -54,6 +54,15 @@ namespace DataBrokerAPI.Repositories.Implementations
             return "CreateCustomer method not implemented yet.";
         }
 
+        public async Task<Customer> GetCustomerById(int id)
+        {
+            if (id <= 0)
+            {
+                throw new ArgumentException("Invalid customer ID", nameof(id));
+            }
+            var customer = _db.Customers.FirstOrDefault(c => c.CustomerId == id);
+            return customer ?? throw new Exception("No customer found with the provided ID.");
 
-    }
+
+        }
 }

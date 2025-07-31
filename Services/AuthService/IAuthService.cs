@@ -8,6 +8,10 @@ namespace DataBrokerAPI.Services.AuthService
         Task<TokenResponseDTO> Login(CustomerDTO request);
         Task<string> Registar(RegistarCustomerReqeust request);
         Task<string> GenerateAndSaveRefreshToken(Customer request);
+
+        Task<Customer> ValidateRefreshToken(RefreshTokenRequestDTO request);
+
+        Task<TokenResponseDTO> RefreshTokensAsync(RefreshTokenRequestDTO request);
         //string GenerateRefreshToken(CustomerDTO request);
     }
 }

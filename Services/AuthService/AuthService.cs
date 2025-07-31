@@ -84,6 +84,44 @@ namespace DataBrokerAPI.Services.AuthService
             return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
         }
 
+        public async Task<Customer?> ValidateRefreshToken(RefreshTokenRequestDTO request)
+        {
+            //Get the customer by ID
+            var customer = await _customerRepo.GetCustomerById(request.CustomerId);
+
+            //If user is null or refresh token does not match or refresh token has expired, return null
+            if (customer is null)
+            {
+                return null;
+            }
+
+            if (request.RefreshToken is null || request.RefreshToken != customer.RefreshToken || customer.RefreshTokenExpiryTime >= DateTime.UtcNow)
+            {
+                return null;
+            }
+
+            //return the customer if all checks pass
+            return customer;
+        }
+
+        public async Task<TokenResponseDTO?> RefreshTokensAsync(RefreshTokenRequestDTO request)
+        {
+            //Validate the refresh token
+            var customer = await ValidateRefreshToken(request);
+            if (customer == null)
+            {
+                return null; // or throw an exception
+            }
+            //Generate a new access token and refresh token
+            var response = new TokenResponseDTO
+            {
+                AccessToken = await GenerateToken(customer),
+                RefreshToken = await GenerateAndSaveRefreshToken(customer),
+            };
+            //return the new tokens
+            return response;
+        }
+
         public async Task<TokenResponseDTO?> Login(CustomerDTO request)
         {
 

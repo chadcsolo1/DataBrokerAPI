@@ -7,5 +7,6 @@ namespace DataBrokerAPI.Repositories
     {
         Task<Customer> GetCustomerByUsername(CustomerDTO request);
         Task<string> CreateCustomer(Customer customer);
+        Task<Customer> GetCustomerById(int id);
     }
 }

@@ -83,6 +83,40 @@ namespace DataBrokerAPI.Controllers
             return Ok(tokens);  
         }
 
+        [HttpPost("refresh-token")]
+        public async Task<ActionResult<TokenResponseDTO>> RefreshTokens(RefreshTokenRequestDTO request)
+        {
+            // Validate the request
+            if (request is null)
+            {
+                return BadRequest("Request cannot be null.");
+            }
+
+            // Validate expected format of request
+            if (request.CustomerId.GetType() != typeof(int) || request.RefreshToken.GetType() != typeof(string))
+            {
+                return BadRequest("Invalid request format.");
+            }
+
+            // Validate that CustomerId is a positive integer and RefreshToken is not null or empty
+            if (request.CustomerId <= 0 || string.IsNullOrEmpty(request.RefreshToken))
+            {
+                return BadRequest("Invalid request format");
+            }
+
+            //call AuthService to refresh tokens
+            var result = await _authService.RefreshTokensAsync(request);
+
+            //Validate the result of AuthService
+            if (result == null)
+            {
+                return Unauthorized("Invalid refresh token or customer ID.");
+            }
+
+            // If successful, return the new tokens
+            return Ok(result);
+        }
+
         [Authorize] // This attribute ensures that the endpoint can only be accessed by authenticated users
         [HttpGet("auth")]
         public IActionResult AuthenticatedOnly()
